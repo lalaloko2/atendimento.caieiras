@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OLX Expirados</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">📦 OLX Expirados</div>
+    <span id="badge" class="badge hidden">0</span>
+  </header>
+
+  <div id="state-idle" class="state">
+    <p>Abra a página de anúncios da OLX e clique em <strong>Buscar Expirados</strong>.</p>
+    <button id="btn-go" class="btn btn-primary">Ir para Meus Anúncios</button>
+  </div>
+
+  <div id="state-loading" class="state hidden">
+    <div class="spinner"></div>
+    <p>Buscando anúncios expirados…</p>
+  </div>
+
+  <div id="state-empty" class="state hidden">
+    <p class="muted">Nenhum anúncio expirado encontrado.</p>
+    <p class="muted small">Certifique-se de estar na aba <em>Expirados</em> da OLX.</p>
+    <button id="btn-expired-tab" class="btn btn-secondary">Abrir aba Expirados</button>
+  </div>
+
+  <div id="state-error" class="state hidden">
+    <p class="error" id="error-msg"></p>
+    <button id="btn-retry" class="btn btn-secondary">Tentar novamente</button>
+  </div>
+
+  <div id="state-results" class="state hidden">
+    <div class="toolbar">
+      <span id="count-label"></span>
+      <button id="btn-export" class="btn btn-small">⬇ Exportar CSV</button>
+    </div>
+    <ul id="listing-list"></ul>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
