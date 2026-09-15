@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Lista todos os anúncios expirados da sua conta OLX",
   "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": ["https://www.olx.com.br/*"],
+  "host_permissions": ["https://conta.olx.com.br/*"],
   "action": {
     "default_popup": "popup.html",
     "default_title": "OLX Expirados",
@@ -16,7 +16,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.olx.com.br/meus-anuncios*"],
+      "matches": ["https://conta.olx.com.br/anuncios*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }

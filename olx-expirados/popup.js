@@ -1,5 +1,5 @@
-const OLX_MY_ADS_URL = 'https://www.olx.com.br/meus-anuncios';
-const OLX_EXPIRED_URL = 'https://www.olx.com.br/meus-anuncios?status=inactive';
+const OLX_MY_ADS_URL = 'https://conta.olx.com.br/anuncios/publicados';
+const OLX_EXPIRED_URL = 'https://conta.olx.com.br/anuncios/expirados';
 
 let currentListings = [];
 
@@ -128,7 +128,7 @@ async function fetchListings() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const tab = await queryActiveTab();
-  const onOlx = tab?.url?.includes('olx.com.br/meus-anuncios');
+  const onOlx = tab?.url?.includes('conta.olx.com.br/anuncios');
 
   if (onOlx) {
     fetchListings();
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   document.getElementById('btn-go').addEventListener('click', () => {
-    chrome.tabs.create({ url: OLX_MY_ADS_URL });
+    chrome.tabs.create({ url: OLX_EXPIRED_URL });
   });
 
   document.getElementById('btn-expired-tab').addEventListener('click', () => {
