@@ -12,33 +12,73 @@
     <span id="badge" class="badge hidden">0</span>
   </header>
 
-  <div id="state-idle" class="state">
+  <!-- Estado: não está na OLX -->
+  <div id="state-idle" class="state hidden">
     <p>Vá na aba <strong>Expirados</strong> da OLX e clique no ícone da extensão.</p>
     <button id="btn-go" class="btn btn-primary">Ir para Expirados</button>
   </div>
 
+  <!-- Estado: carregando lista -->
   <div id="state-loading" class="state hidden">
     <div class="spinner"></div>
     <p>Buscando anúncios expirados…</p>
   </div>
 
+  <!-- Estado: nenhum expirado -->
   <div id="state-empty" class="state hidden">
     <p class="muted">Nenhum anúncio expirado encontrado.</p>
-    <p class="muted small">Certifique-se de estar na aba <em>Expirados</em> da OLX.</p>
+    <p class="muted small">Certifique-se de estar na aba <em>Expirados</em>.</p>
     <button id="btn-expired-tab" class="btn btn-secondary">Abrir aba Expirados</button>
   </div>
 
+  <!-- Estado: erro -->
   <div id="state-error" class="state hidden">
     <p class="error" id="error-msg"></p>
     <button id="btn-retry" class="btn btn-secondary">Tentar novamente</button>
   </div>
 
+  <!-- Estado: lista de expirados -->
   <div id="state-results" class="state hidden">
     <div class="toolbar">
       <span id="count-label"></span>
-      <button id="btn-export" class="btn btn-small">⬇ Exportar CSV</button>
+      <div class="toolbar-actions">
+        <button id="btn-export" class="btn btn-small">⬇ CSV</button>
+        <button id="btn-renew-all" class="btn btn-small btn-renew">⚡ Renovar Todos</button>
+      </div>
     </div>
     <ul id="listing-list"></ul>
+  </div>
+
+  <!-- Estado: renovação em andamento -->
+  <div id="state-renewing" class="state hidden">
+    <div class="renew-header">
+      <div class="spinner"></div>
+      <strong>Renovando anúncios…</strong>
+    </div>
+    <div class="progress-row">
+      <span>Renovados:</span>
+      <span id="renew-done" class="renew-count">0</span>
+    </div>
+    <div class="progress-row">
+      <span>Com erro:</span>
+      <span id="renew-failed" class="renew-failed">0</span>
+    </div>
+    <p class="muted small">Não feche a aba da OLX enquanto o processo estiver rodando.</p>
+    <button id="btn-stop" class="btn btn-secondary">⛔ Parar</button>
+  </div>
+
+  <!-- Estado: renovação concluída -->
+  <div id="state-done" class="state hidden">
+    <p class="done-msg">✅ Renovação concluída!</p>
+    <div class="progress-row">
+      <span>Renovados:</span>
+      <span id="done-count" class="renew-count">0</span>
+    </div>
+    <div class="progress-row">
+      <span>Com erro:</span>
+      <span id="done-failed" class="renew-failed">0</span>
+    </div>
+    <button id="btn-restart" class="btn btn-secondary">Verificar novamente</button>
   </div>
 
   <script src="popup.js"></script>

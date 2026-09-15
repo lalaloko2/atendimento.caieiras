@@ -1,103 +1,50 @@
+// Runs on conta.olx.com.br/anuncios/expirados
 (function () {
-  // OLX uses conta.olx.com.br/anuncios/expirados
-  // Each listing is a row with a status label and card data
+  const CARD_SELECTORS = [
+    '[data-lurker-detail="list_id"]',
+    '[data-ds-component="DS-NewAdCard"]',
+    '[class*="AdCard"]',
+    '[class*="ad-card"]',
+    'article',
+  ];
 
-  function isOnExpiredTab() {
-    return window.location.pathname.includes('/expirados');
-  }
-
-  function findListingRows() {
-    // Based on OLX's actual DOM: listing rows inside the anuncios list
-    // Each has a status badge ("PUBLICADO", "EXPIRADO", etc.) and card content
-    const candidates = [
-      // OLX uses section or li elements per listing
-      'section[class*="ad"]',
-      'li[class*="ad"]',
-      '[data-testid*="ad-card"]',
-      '[data-testid*="listing"]',
-      // Fallback: any container that has a status label + price
-      'div[class*="AdCard"]',
-      'div[class*="adCard"]',
-      'article',
-    ];
-
-    for (const sel of candidates) {
-      const els = document.querySelectorAll(sel);
-      if (els.length > 0) return Array.from(els);
+  function findAllCards() {
+    for (const sel of CARD_SELECTORS) {
+      const cards = document.querySelectorAll(sel);
+      if (cards.length > 0) return Array.from(cards);
     }
-
-    // Last resort: find divs that contain status text + action buttons
-    return findByContent();
+    return [];
   }
 
-  function findByContent() {
-    // Walk top-level containers looking for listing-shaped blocks
-    const results = [];
-    const all = document.querySelectorAll('div, section, li, article');
-    for (const el of all) {
-      // A listing block: has a status label AND price AND an edit/delete action
-      const text = el.textContent || '';
-      const hasStatus = /PUBLICADO|EXPIRADO|INATIVO|VENDIDO/i.test(text);
-      const hasPrice = /R\$\s*[\d.,]+/.test(text);
-      const hasAction = el.querySelector('a, button') !== null;
-      // Must be a "leaf" container not nested inside another match
-      if (hasStatus && hasPrice && hasAction && el.children.length < 20) {
-        results.push(el);
-      }
-    }
-    // Deduplicate: keep only elements not inside another result
-    return results.filter(el =>
-      !results.some(other => other !== el && other.contains(el))
-    );
+  function isExpiredCard(card) {
+    const text = card.textContent || '';
+    const lower = text.toLowerCase();
+    if (lower.includes('expirado') || lower.includes('expired')) return true;
+    if (card.querySelector('[class*="expired" i]')) return true;
+    return false;
   }
 
-  function isExpiredRow(el) {
-    const text = el.textContent || '';
-    return /EXPIRADO/i.test(text) ||
-      el.querySelector('[class*="expired" i]') !== null ||
-      el.querySelector('[class*="expirado" i]') !== null;
-  }
-
-  function extractData(el) {
-    // Title: first meaningful heading or strong text
+  function extractData(card) {
     const titleEl =
-      el.querySelector('h2') ||
-      el.querySelector('h3') ||
-      el.querySelector('[class*="title" i]') ||
-      el.querySelector('strong');
+      card.querySelector('h2') ||
+      card.querySelector('h3') ||
+      card.querySelector('[class*="title" i]') ||
+      card.querySelector('[data-testid*="title"]');
 
-    // Price: R$ pattern
     const priceEl =
-      el.querySelector('[class*="price" i]') ||
-      el.querySelector('[class*="preco" i]') ||
-      (() => {
-        const all = el.querySelectorAll('*');
-        for (const e of all) {
-          if (/R\$\s*[\d.,]+/.test(e.textContent) && e.children.length === 0) return e;
-        }
-        return null;
-      })();
+      card.querySelector('[class*="price" i]') ||
+      card.querySelector('[data-testid*="price"]');
 
-    // Link — prefer link to the ad detail page
     const linkEl =
-      el.querySelector('a[href*="/anuncios/"]') ||
-      el.querySelector('a[href*="olx.com.br"]') ||
-      el.querySelector('a[href]');
+      card.querySelector('a[href*="olx.com.br"]') ||
+      card.querySelector('a[href]');
 
-    const imgEl = el.querySelector('img');
+    const imgEl = card.querySelector('img');
 
-    // Date: look for date-like text
     const dateEl =
-      el.querySelector('time') ||
-      el.querySelector('[class*="date" i]') ||
-      el.querySelector('[class*="data" i]') ||
-      (() => {
-        const all = el.querySelectorAll('*');
-        for (const e of all) {
-          if (/\d{2}\/\d{2}\/\d{2,4}|\d{2}\/\d{2}\s+às/.test(e.textContent) && e.children.length === 0) return e;
-        }
-        return null;
-      })();
+      card.querySelector('[class*="date" i]') ||
+      card.querySelector('[class*="data" i]') ||
+      card.querySelector('time');
 
     const url = linkEl?.href || '';
     const idMatch = url.match(/-(\d{6,})/) || url.match(/\/(\d{6,})/);
@@ -112,27 +59,78 @@
     };
   }
 
-  function getExpiredListings() {
-    const rows = findListingRows();
+  function isOnExpiredTab() {
+    return window.location.pathname.includes('/expirados');
+  }
 
-    if (isOnExpiredTab()) {
-      // All rows on this tab are expired
-      return rows.map(extractData).filter(l => l.title !== '—' || l.url);
+  function isOnExpiredSection() {
+    if (isOnExpiredTab()) return true;
+    const activeTab = document.querySelector(
+      '[class*="tab"][class*="active"], [class*="Tab"][class*="active"], [aria-selected="true"]'
+    );
+    if (activeTab) {
+      const t = activeTab.textContent.toLowerCase();
+      if (t.includes('expir')) return true;
     }
+    return false;
+  }
 
-    // Mixed tab: filter only expired ones
-    return rows.filter(isExpiredRow).map(extractData);
+  function getExpiredListings() {
+    const cards = findAllCards();
+    if (isOnExpiredSection()) {
+      return cards.map(extractData).filter(l => l.title !== '—' || l.url);
+    }
+    return cards.filter(isExpiredCard).map(extractData);
+  }
+
+  // ── Renewal automation ──────────────────────────────────────────────────────
+
+  function findFirstRenovarButton() {
+    // Look for button/link with text "Renovar" (not "Renovar agora")
+    const all = [...document.querySelectorAll('a, button')];
+    return all.find(el => {
+      const text = el.textContent.replace(/[\s\n\r]+/g, ' ').trim();
+      return /^renovar$/i.test(text) || /^⚡\s*renovar$/i.test(text) || text === 'Renovar';
+    });
+  }
+
+  function tryLoadMore() {
+    // Click "Carregar mais" or pagination next if present
+    const loadMore = [...document.querySelectorAll('button, a')].find(el =>
+      /carregar mais|ver mais|próxima|next/i.test(el.textContent)
+    );
+    if (loadMore) {
+      loadMore.click();
+      return true;
+    }
+    return false;
   }
 
   chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
     if (request.action === 'getExpiredListings') {
       try {
-        const listings = getExpiredListings();
-        sendResponse({ ok: true, listings, url: window.location.href });
+        sendResponse({ ok: true, listings: getExpiredListings(), url: window.location.href });
       } catch (e) {
         sendResponse({ ok: false, error: e.message, listings: [] });
       }
     }
+
+    if (request.action === 'clickNextRenovar') {
+      const btn = findFirstRenovarButton();
+      if (btn) {
+        btn.click();
+        sendResponse({ found: true });
+      } else {
+        // Try to load more items first
+        if (tryLoadMore()) {
+          sendResponse({ found: false, loadingMore: true });
+        } else {
+          chrome.runtime.sendMessage({ action: 'renewalComplete' });
+          sendResponse({ found: false });
+        }
+      }
+    }
+
     return true;
   });
 })();
