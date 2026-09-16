@@ -3,10 +3,11 @@
   "name": "OLX Anúncios Expirados",
   "version": "2.0.0",
   "description": "Lista e renova automaticamente todos os anúncios expirados da OLX (grátis)",
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "permissions": ["activeTab", "scripting", "storage", "tabs", "cookies"],
   "host_permissions": [
     "https://conta.olx.com.br/*",
-    "https://adquirir.olx.com.br/*"
+    "https://adquirir.olx.com.br/*",
+    "https://*.olx.com.br/*"
   ],
   "background": {
     "service_worker": "background.js"

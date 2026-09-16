@@ -5,6 +5,16 @@ function delay(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
+// Human-like delay: Gaussian around midpoint, never below min
+function humanDelay(min, max) {
+  const mean = (min + max) / 2;
+  const std  = (max - min) / 5;
+  const u1   = Math.random() || 1e-9;
+  const z    = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * Math.random());
+  const ms   = Math.max(min, Math.min(max, mean + z * std));
+  return delay(ms);
+}
+
 function findFreeOptionElement() {
   // Walk all clickable elements looking for the free option card
   const candidates = [
@@ -53,15 +63,18 @@ async function autoRenew() {
   const { renewalActive } = await chrome.storage.local.get('renewalActive');
   if (!renewalActive) return;
 
-  // Wait for page to render fully
-  await delay(1500);
+  // Human-range wait for page render (1.5–3s)
+  await humanDelay(1500, 3000);
 
   // Select "Renovar sem destacar" (grátis)
   const freeOpt = findFreeOptionElement();
   if (freeOpt) {
     freeOpt.click();
-    await delay(700);
+    await humanDelay(500, 1200);
   }
+
+  // Pause as if reading the options
+  await humanDelay(800, 2000);
 
   // Click "Renovar agora"
   const confirmBtn = findConfirmButton();
@@ -69,11 +82,12 @@ async function autoRenew() {
     confirmBtn.click();
     const { renewalDone = 0 } = await chrome.storage.local.get('renewalDone');
     await chrome.storage.local.set({ renewalDone: renewalDone + 1 });
-    await delay(3000);
+    // Human wait after confirming (2–5s)
+    await humanDelay(2000, 5000);
   } else {
     const { renewalFailed = 0 } = await chrome.storage.local.get('renewalFailed');
     await chrome.storage.local.set({ renewalFailed: renewalFailed + 1 });
-    await delay(1000);
+    await humanDelay(800, 1800);
   }
 
   // Navigate back to expirados — background.js will trigger next click

@@ -1,0 +1,15 @@
+{
+  "name": "olx-bot",
+  "version": "1.0.0",
+  "description": "OLX renewal bot — stealth browser, residential proxies, human timing, cookie rotation",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js",
+    "install-chrome": "npx puppeteer browsers install chrome"
+  },
+  "dependencies": {
+    "puppeteer": "^22.15.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
